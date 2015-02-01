@@ -1,0 +1,5 @@
+<Project>
+  <name>StatList</name>
+  <source><GitRepo/></source>
+  <version><GitVersion/></version>
+</Project>
