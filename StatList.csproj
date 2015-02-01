@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -83,18 +83,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\Code\ICombiner.cs">
-      <Link>ICombiner.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\Code\ListItemStats.cs">
-      <Link>ListItemStats.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\Code\StatList.cs">
-      <Link>StatList.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\Code\TreeNode.cs">
-      <Link>TreeNode.cs</Link>
-    </Compile>
+    <Compile Include="Source\ICombiner.cs"/>
+    <Compile Include="Source\ListItemStats.cs"/>
+    <Compile Include="Source\StatList.cs"/>
+    <Compile Include="Source\TreeNode.cs"/>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
