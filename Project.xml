@@ -1,5 +1,7 @@
-<Project>
+
+<Project>  
   <name>StatList</name>
   <source><GitRepo/></source>
   <version><GitVersion/></version>
+  <dependencies><DependencyList/></dependencies>
 </Project>
