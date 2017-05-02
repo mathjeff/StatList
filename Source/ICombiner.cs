@@ -13,4 +13,22 @@ namespace StatLists
         //ValueType Difference(ValueType larger, ValueType smaller);
         ValueType Default();
     }
+
+    public class NoopCombiner<ValueType> : ICombiner<ValueType>
+    {
+        public NoopCombiner()
+        {
+
+        }
+
+        public ValueType Combine(ValueType a, ValueType b)
+        {
+            return default(ValueType);
+        }
+
+        public ValueType Default()
+        {
+            return default(ValueType);
+        }
+    }
 }

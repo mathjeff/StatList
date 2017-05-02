@@ -601,6 +601,16 @@ namespace StatLists
             return resultList;
         }
 
+        public StatList<KeyType, ValueType> Union(StatList<KeyType, ValueType> other)
+        {
+            StatList<KeyType, ValueType> union = new StatList<KeyType, ValueType>(this);
+            foreach (ListItemStats<KeyType, ValueType> item in other.AllItems)
+            {
+                union.Add(item.Key, item.Value);
+            }
+            return union;
+        }
+
         #endregion
 
         #region Private Member Functions
