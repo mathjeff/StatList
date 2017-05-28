@@ -436,26 +436,6 @@ namespace StatLists
             return this.GetValueAtIndex(this.NumItems - 1);
         }
 
-        /*public int IndexOfPreviousItem(KeyType nextKey, bool strictlyLess)
-        {
-            ListItemStats<KeyType, ValueType> itemStats = this.FindPreviousItem(nextKey, strictlyLess);
-            if (itemStats == null)
-            {
-                return -1;
-            }
-            else
-            {
-                return itemStats.Index;
-            }
-        }*/
-        /*public ValueType CombineBetweenKeys(KeyType left, bool leftInclusive, KeyType right, bool rightInclusive)
-        {
-            ValueType leftSum = this.CombineThroughKey(left, !leftInclusive);
-            ValueType rightSum = this.CombineThroughKey(right, rightInclusive);
-            // this call to Difference should be replaced by a bunch of calls to Combine so that it will support functions like Max for which Difference doesn't make sense
-            ValueType result = this.valueCombiner.Difference(rightSum, leftSum);
-            return result;
-        }*/
 
         public ValueType CombineBetweenKeys(KeyType leftKey, bool leftInclusive, KeyType rightKey, bool rightInclusive)
         {
@@ -488,27 +468,13 @@ namespace StatLists
             }
 
             result = this.CombineBetweenKeys(leftKey, leftInclusive, rightKey, rightInclusive, currentNode);
-
-            //correctResult = this.CombineBetweenKeys(leftKey, leftInclusive, rightKey, rightInclusive, this.rootNode);
-
+            
             return result;
 
         }
         private ValueType CombineBetweenKeys(KeyType leftKey, bool leftInclusive, KeyType rightKey, bool rightInclusive, TreeNode<KeyType, ValueType> startingNode)
         {
-            /* // make sure the range is not empty
-            int keyComparison = this.keyComparer.Compare(rightKey, leftKey);
-            if (keyComparison < 0)
-            {
-                return this.valueCombiner.Default();
-            }
-            if (keyComparison == 0)
-            {
-                if (!leftInclusive || !rightInclusive)
-                {
-                    return this.valueCombiner.Default();
-                }
-            }*/
+
             // check that we have data to add up
             if (this.rootNode == null)
             {
@@ -567,21 +533,7 @@ namespace StatLists
         {
             this.rootNode = this.latestNode = null;
         }
-        /*
-        public List<ListItemStats<KeyType, ValueType>> DebugList
-        {
-            get
-            {
-                List<ListItemStats<KeyType, ValueType>> results = new List<ListItemStats<KeyType, ValueType>>();
-                int i;
-                for (i = 0; i < this.NumItems; i++)
-                {
-                    results.Add(this.GetValueAtIndex(i));
-                }
-                return results;
-            }
-        }
-        */
+       
         // This is faster to calculate than DebugList
         public IEnumerable<ListItemStats<KeyType, ValueType>> AllItems
         {
@@ -595,9 +547,22 @@ namespace StatLists
         }
         public LinkedList<ListItemStats<KeyType, ValueType>> ItemsFromIndex(int indexInclusive)
         {
-            // this hasn't been tested yet
+            return this.ItemsBetweenIndices(0, this.numItems);
+        }
+        public LinkedList<ListItemStats<KeyType, ValueType>> ItemsBetweenIndices(int minIndexInclusive, int maxIndexExclusive)
+        {
             LinkedList<ListItemStats<KeyType, ValueType>> resultList = new LinkedList<ListItemStats<KeyType, ValueType>>();
-            this.GetItemsFromIndex(indexInclusive, this.rootNode, resultList);
+            if (maxIndexExclusive > minIndexInclusive)
+            {
+                if (maxIndexExclusive > this.numItems + 1)
+                    throw new ArgumentException("maxIndexExclusive must be <= " + (this.numItems + 1) + "; was " + maxIndexExclusive);
+                if (minIndexInclusive < 0)
+                    throw new ArgumentException("minindexInclusive must be >= 0; was " + minIndexInclusive);
+            }
+            if (this.rootNode != null)
+            {
+                this.GetItemsBetweenIndices(minIndexInclusive, maxIndexExclusive, this.rootNode, resultList);
+            }
             return resultList;
         }
 
@@ -615,36 +580,28 @@ namespace StatLists
 
         #region Private Member Functions
 
-        private void GetItemsFromIndex(int indexInclusive, TreeNode<KeyType, ValueType> startingNode, LinkedList<ListItemStats<KeyType, ValueType>> outputList)
+        private void GetItemsBetweenIndices(int minIndexInclusive, int maxIndexExclusive, TreeNode<KeyType, ValueType> startingNode, LinkedList<ListItemStats<KeyType, ValueType>> outputList)
         {
-            // this function hasn't been tested yet
             int leftCount = this.GetSubnodeCount(startingNode.LeftChild);
-            if (indexInclusive < leftCount)
+            if (minIndexInclusive < leftCount)
             {
-                // if we get here, then the first node is in the left child
+                // add the requested components from the left child
                 if (startingNode.LeftChild != null)
                 {
-                    this.GetItemsFromIndex(indexInclusive, startingNode.LeftChild, outputList);
+                    int maxIndex = Math.Min(leftCount, maxIndexExclusive);
+                    this.GetItemsBetweenIndices(minIndexInclusive, maxIndex, startingNode.LeftChild, outputList);
                 }
-                outputList.AddLast(startingNode.Stats);
-                if (startingNode.RightChild != null)
-                    this.GetAllItems(startingNode.RightChild, outputList);
             }
-            else
+            // add self if in range
+            if (minIndexInclusive <= leftCount && maxIndexExclusive > leftCount)
             {
-                if (indexInclusive == leftCount)
-                {
-                    // if we get here, then the first node is here
-                    outputList.AddLast(startingNode.Stats);
-                    if (startingNode.RightChild != null)
-                        this.GetAllItems(startingNode.RightChild, outputList);
-                }
-                else
-                {
-                    // if we get here, then the first node is in the right child
-                    if (startingNode.RightChild != null)
-                        this.GetItemsFromIndex(indexInclusive - (leftCount + 1), startingNode.RightChild, outputList);
-                }
+                outputList.AddLast(startingNode.Stats);
+            }
+            if (maxIndexExclusive > leftCount + 1)
+            {
+                // add the requested components from the right child
+                int rightMinimum = Math.Max(0, minIndexInclusive - (leftCount + 1));
+                this.GetItemsBetweenIndices(rightMinimum, maxIndexExclusive - (leftCount + 1), startingNode.RightChild, outputList);
             }
         }
 
