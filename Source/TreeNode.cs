@@ -45,18 +45,6 @@ namespace StatLists
         public int DepthAtLatestRebalancing { get; set; }   // what the value of MaxDepth was when the tree was last rebalanced
         public KeyType MinSubkey { get; set; }  // the minimum value of all keys among all descendents
         public KeyType MaxSubkey { get; set; }  // the maximum value of all keys among all descendents
-        public int GetNumLeftChildren()
-        {
-            if (this.LeftChild == null)
-                return 0;
-            return this.LeftChild.SubnodeCount;
-        }
-        public int GetNumRightChildren()
-        {
-            if (this.RightChild == null)
-                return 0;
-            return this.RightChild.SubnodeCount;
-        }
         public TreeNode<KeyType, ValueType> LeftChild 
         {
             get

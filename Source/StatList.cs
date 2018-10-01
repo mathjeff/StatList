@@ -397,7 +397,7 @@ namespace StatLists
             int totalLowerCount = 0;
             while (currentNode != null)
             {
-                int currentLowerCount = currentNode.GetNumLeftChildren();
+                int currentLowerCount = this.GetNumLeftChildren(currentNode);
                 if (index < totalLowerCount + currentLowerCount)
                 {
                     currentNode = currentNode.LeftChild;
@@ -421,19 +421,15 @@ namespace StatLists
         }
         public ListItemStats<KeyType, ValueType> GetFirstValue()
         {
-            if (this.NumItems == 0)
-            {
+            if (this.leftmostNode == null)
                 return null;
-            }
-            return this.GetValueAtIndex(0);
+            return this.leftmostNode.Stats;
         }
         public ListItemStats<KeyType, ValueType> GetLastValue()
         {
-            if (this.NumItems == 0)
-            {
+            if (this.rightmostNode == null)
                 return null;
-            }
-            return this.GetValueAtIndex(this.NumItems - 1);
+            return this.rightmostNode.Stats;
         }
 
 
@@ -472,6 +468,24 @@ namespace StatLists
             return result;
 
         }
+
+        private int GetNumLeftChildren(TreeNode<KeyType, ValueType> node)
+        {
+            if (!node.Updated)
+                this.UpdateFromChildren(node);
+            if (node.LeftChild == null)
+                return 0;
+            return node.LeftChild.SubnodeCount;
+        }
+        private int GetNumRightChildren(TreeNode<KeyType, ValueType> node)
+        {
+            if (!node.Updated)
+                this.UpdateFromChildren(node);
+            if (node.RightChild == null)
+                return 0;
+            return node.RightChild.SubnodeCount;
+        }
+
         private ValueType CombineBetweenKeys(KeyType leftKey, bool leftInclusive, KeyType rightKey, bool rightInclusive, TreeNode<KeyType, ValueType> startingNode)
         {
 
@@ -773,7 +787,7 @@ namespace StatLists
                 }
                 else
                 {
-                    lowerCount += currentNode.GetNumLeftChildren() + 1;
+                    lowerCount += this.GetNumLeftChildren(currentNode) + 1;
                     currentNode = currentNode.RightChild;
                 }
             }
