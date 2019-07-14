@@ -561,7 +561,7 @@ namespace StatLists
         }
         public LinkedList<ListItemStats<KeyType, ValueType>> ItemsFromIndex(int indexInclusive)
         {
-            return this.ItemsBetweenIndices(0, this.numItems);
+            return this.ItemsBetweenIndices(indexInclusive, this.numItems);
         }
         public LinkedList<ListItemStats<KeyType, ValueType>> ItemsBetweenIndices(int minIndexInclusive, int maxIndexExclusive)
         {
@@ -578,6 +578,12 @@ namespace StatLists
                 this.GetItemsBetweenIndices(minIndexInclusive, maxIndexExclusive, this.rootNode, resultList);
             }
             return resultList;
+        }
+
+        public LinkedList<ListItemStats<KeyType, ValueType>> ItemsAfterKey(KeyType key, bool inclusive)
+        {
+            int skipCount = this.CountBeforeKey(key, !inclusive);
+            return this.ItemsFromIndex(skipCount);
         }
 
         public StatList<KeyType, ValueType> Union(StatList<KeyType, ValueType> other)
