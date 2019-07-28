@@ -10,7 +10,6 @@ namespace StatLists
     public interface ICombiner<ValueType>
     {
         ValueType Combine(ValueType a, ValueType b);
-        //ValueType Difference(ValueType larger, ValueType smaller);
         ValueType Default();
     }
 
