@@ -559,6 +559,30 @@ namespace StatLists
                 return results;
             }
         }
+        public IEnumerable<KeyType> Keys
+        {
+            get
+            {
+                List<KeyType> results = new List<KeyType>();
+                foreach (ListItemStats<KeyType, ValueType> stats in this.AllItems)
+                {
+                    results.Add(stats.Key);
+                }
+                return results;
+            }
+        }
+        public IEnumerable<ValueType> Values
+        {
+            get
+            {
+                List<ValueType> results = new List<ValueType>();
+                foreach (ListItemStats<KeyType, ValueType> stats in this.AllItems)
+                {
+                    results.Add(stats.Value);
+                }
+                return results;
+            }
+        }
         public LinkedList<ListItemStats<KeyType, ValueType>> ItemsFromIndex(int indexInclusive)
         {
             return this.ItemsBetweenIndices(indexInclusive, this.numItems);
