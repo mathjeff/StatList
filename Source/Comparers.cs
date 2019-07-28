@@ -13,4 +13,12 @@ namespace StatLists
             return a.CompareTo(b);
         }
     }
+
+    public class IntComparerer : IComparer<int>
+    {
+        public int Compare(int a, int b)
+        {
+            return a.CompareTo(b);
+        }
+    }
 }
