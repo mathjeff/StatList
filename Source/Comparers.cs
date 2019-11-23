@@ -14,6 +14,14 @@ namespace StatLists
         }
     }
 
+    public class ReverseDoubleComparer : IComparer<double>
+    {
+        public int Compare(double a, double b)
+        {
+            return b.CompareTo(a);
+        }
+    }
+
     public class IntComparerer : IComparer<int>
     {
         public int Compare(int a, int b)
