@@ -27,7 +27,7 @@ namespace StatLists
             this.keyComparer = source.keyComparer;
             this.valueCombiner = source.valueCombiner;
             // get the appropriate data to add
-            LinkedList<ListItemStats<KeyType, ValueType>> sourceItems = new LinkedList<ListItemStats<KeyType, ValueType>>();
+            List<ListItemStats<KeyType, ValueType>> sourceItems = new List<ListItemStats<KeyType, ValueType>>(source.NumItems);
             if (source.rootNode != null)
             {
                 source.GetAllItems(source.rootNode, sourceItems);
@@ -553,7 +553,7 @@ namespace StatLists
         {
             get
             {
-                LinkedList<ListItemStats<KeyType, ValueType>> results = new LinkedList<ListItemStats<KeyType, ValueType>>();
+                List<ListItemStats<KeyType, ValueType>> results = new List<ListItemStats<KeyType, ValueType>>(this.NumItems);
                 if (this.rootNode != null)
                     this.GetAllItems(this.rootNode, results);
                 return results;
@@ -563,7 +563,7 @@ namespace StatLists
         {
             get
             {
-                List<KeyType> results = new List<KeyType>();
+                List<KeyType> results = new List<KeyType>(this.NumItems);
                 foreach (ListItemStats<KeyType, ValueType> stats in this.AllItems)
                 {
                     results.Add(stats.Key);
@@ -575,7 +575,7 @@ namespace StatLists
         {
             get
             {
-                List<ValueType> results = new List<ValueType>();
+                List<ValueType> results = new List<ValueType>(this.NumItems);
                 foreach (ListItemStats<KeyType, ValueType> stats in this.AllItems)
                 {
                     results.Add(stats.Value);
@@ -583,13 +583,12 @@ namespace StatLists
                 return results;
             }
         }
-        public LinkedList<ListItemStats<KeyType, ValueType>> ItemsFromIndex(int indexInclusive)
+        public List<ListItemStats<KeyType, ValueType>> ItemsFromIndex(int indexInclusive)
         {
             return this.ItemsBetweenIndices(indexInclusive, this.numItems);
         }
-        public LinkedList<ListItemStats<KeyType, ValueType>> ItemsBetweenIndices(int minIndexInclusive, int maxIndexExclusive)
+        public List<ListItemStats<KeyType, ValueType>> ItemsBetweenIndices(int minIndexInclusive, int maxIndexExclusive)
         {
-            LinkedList<ListItemStats<KeyType, ValueType>> resultList = new LinkedList<ListItemStats<KeyType, ValueType>>();
             if (maxIndexExclusive > minIndexInclusive)
             {
                 if (maxIndexExclusive > this.numItems + 1)
@@ -597,6 +596,7 @@ namespace StatLists
                 if (minIndexInclusive < 0)
                     throw new ArgumentException("minindexInclusive must be >= 0; was " + minIndexInclusive);
             }
+            List<ListItemStats<KeyType, ValueType>> resultList = new List<ListItemStats<KeyType, ValueType>>(maxIndexExclusive - minIndexInclusive);
             if (this.rootNode != null)
             {
                 this.GetItemsBetweenIndices(minIndexInclusive, maxIndexExclusive, this.rootNode, resultList);
@@ -604,7 +604,7 @@ namespace StatLists
             return resultList;
         }
 
-        public LinkedList<ListItemStats<KeyType, ValueType>> ItemsAfterKey(KeyType key, bool inclusive)
+        public List<ListItemStats<KeyType, ValueType>> ItemsAfterKey(KeyType key, bool inclusive)
         {
             int skipCount = this.CountBeforeKey(key, !inclusive);
             return this.ItemsFromIndex(skipCount);
@@ -624,7 +624,7 @@ namespace StatLists
 
         #region Private Member Functions
 
-        private void GetItemsBetweenIndices(int minIndexInclusive, int maxIndexExclusive, TreeNode<KeyType, ValueType> startingNode, LinkedList<ListItemStats<KeyType, ValueType>> outputList)
+        private void GetItemsBetweenIndices(int minIndexInclusive, int maxIndexExclusive, TreeNode<KeyType, ValueType> startingNode, List<ListItemStats<KeyType, ValueType>> outputList)
         {
             int leftCount = this.GetSubnodeCount(startingNode.LeftChild);
             if (minIndexInclusive < leftCount)
@@ -639,7 +639,7 @@ namespace StatLists
             // add self if in range
             if (minIndexInclusive <= leftCount && maxIndexExclusive > leftCount)
             {
-                outputList.AddLast(startingNode.Stats);
+                outputList.Add(startingNode.Stats);
             }
             if (maxIndexExclusive > leftCount + 1)
             {
@@ -650,12 +650,12 @@ namespace StatLists
         }
 
         // returns a list of all of the items in the StatList
-        private void GetAllItems(TreeNode<KeyType, ValueType> startingNode, LinkedList<ListItemStats<KeyType, ValueType>> outputList)
+        private void GetAllItems(TreeNode<KeyType, ValueType> startingNode, List<ListItemStats<KeyType, ValueType>> outputList)
         {
             if (startingNode.LeftChild != null)
                 this.GetAllItems(startingNode.LeftChild, outputList);
             //outputList.Add(startingNode.Value);
-            outputList.AddLast(startingNode.Stats);
+            outputList.Add(startingNode.Stats);
 
             if (startingNode.RightChild != null)
                 this.GetAllItems(startingNode.RightChild, outputList);
