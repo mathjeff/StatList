@@ -707,15 +707,15 @@ namespace StatLists
         private void UpdateFromChildren(TreeNode<KeyType, ValueType> node)
         {
             // update node.Aggregate
-            ValueType leftSum = this.GetAggregate(node.LeftChild);
-            ValueType middle = node.Value;
-            ValueType rightSum = this.GetAggregate(node.RightChild);
-            node.Aggregate = this.valueCombiner.Combine(this.valueCombiner.Combine(leftSum, middle), rightSum);
+            ValueType aggregate = node.Value;
+            if (node.LeftChild != null)
+                aggregate = this.valueCombiner.Combine(this.GetAggregate(node.LeftChild), aggregate);
+            if (node.RightChild != null)
+                aggregate = this.valueCombiner.Combine(aggregate, this.GetAggregate(node.RightChild));
+            node.Aggregate = aggregate;
 
             // update node.SubnodeCount
-            int previousCount = node.SubnodeCount;
-            int newCount = this.GetSubnodeCount(node.LeftChild) + 1 + this.GetSubnodeCount(node.RightChild);
-            node.SubnodeCount = newCount;
+            node.SubnodeCount = this.GetSubnodeCount(node.LeftChild) + 1 + this.GetSubnodeCount(node.RightChild);
 
             // update node.MaxDepth
             node.MaxDepth = Math.Max(this.GetMaxDepth(node.LeftChild), this.GetMaxDepth(node.RightChild)) + 1;
