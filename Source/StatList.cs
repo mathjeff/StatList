@@ -108,7 +108,6 @@ namespace StatLists
                 {
                     bool chooseLeft1 = (grandParent.LeftChild == parent);
                     bool chooseLeft2 = (parent.LeftChild == currentNode);
-                    TreeNode<KeyType, ValueType> greatGrandparent = grandParent.Parent;
                     if (chooseLeft1)
                     {
                         if (chooseLeft2)
