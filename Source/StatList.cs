@@ -77,7 +77,7 @@ namespace StatLists
                 currentNode.RightChild = nodeObject;
             }
             // flag that all data for this node (and all of its ancestors) may be out-of-date
-            this.InvalidateAggregate(currentNode);
+            this.InvalidateStats(currentNode);
             //bool changed = true;
             // Now go back up the tree and update all the pointers
             /*
@@ -172,9 +172,9 @@ namespace StatLists
                         }
                     }
                     // update the statistics
-                    this.UpdateFromChildren(parent.LeftChild);
-                    this.UpdateFromChildren(parent.RightChild);
-                    this.UpdateFromChildren(parent);
+                    this.UpdateStatsFromChildren(parent.LeftChild);
+                    this.UpdateStatsFromChildren(parent.RightChild);
+                    this.UpdateStatsFromChildren(parent);
                     parent.DepthAtLatestRebalancing = this.GetMaxDepth(parent);
                     parent.LeftChild.DepthAtLatestRebalancing = this.GetMaxDepth(parent.LeftChild);
                     parent.RightChild.DepthAtLatestRebalancing = this.GetMaxDepth(parent.RightChild);
@@ -227,8 +227,6 @@ namespace StatLists
                 if (comparison == 0)
                 {
                     nodeToRemove = currentNode;
-                    //this.Remove(currentNode);
-                    //return;
                 }
                 currentNode = this.ChooseChild(key, currentNode);
             }
@@ -240,10 +238,10 @@ namespace StatLists
         {
             TreeNode<KeyType, ValueType> newLatestNode = nodeToRemove.Parent;
             // remove the node and flag that the statistics need updating
-            this.InvalidateAggregate(nodeToRemove);
+            this.InvalidateStats(nodeToRemove);
             TreeNode<KeyType, ValueType> newChild = this.MergeChildren(nodeToRemove.LeftChild, nodeToRemove.RightChild);
             this.ReplaceChild(nodeToRemove, newChild);
-            this.InvalidateAggregate(newChild);
+            this.InvalidateStats(newChild);
             this.numItems--;
 
             if (this.rootNode == null)
@@ -281,8 +279,8 @@ namespace StatLists
                 // move the left child up
                 rightChild.LeftChild = this.MergeChildren(leftChild.RightChild, rightChild.LeftChild);
                 leftChild.RightChild = rightChild;
-                this.InvalidateAggregate(leftChild);
-                this.InvalidateAggregate(rightChild);
+                this.InvalidateStats(leftChild);
+                this.InvalidateStats(rightChild);
                 return leftChild;
             }
             else
@@ -290,8 +288,8 @@ namespace StatLists
                 // move the right child up
                 leftChild.RightChild = this.MergeChildren(leftChild.RightChild, rightChild.LeftChild);
                 rightChild.LeftChild = leftChild;
-                this.InvalidateAggregate(leftChild);
-                this.InvalidateAggregate(rightChild);
+                this.InvalidateStats(leftChild);
+                this.InvalidateStats(rightChild);
                 return rightChild;
             }
         }
@@ -471,7 +469,7 @@ namespace StatLists
         private int GetNumLeftChildren(TreeNode<KeyType, ValueType> node)
         {
             if (!node.Updated)
-                this.UpdateFromChildren(node);
+                this.UpdateStatsFromChildren(node);
             if (node.LeftChild == null)
                 return 0;
             return node.LeftChild.SubnodeCount;
@@ -479,7 +477,7 @@ namespace StatLists
         private int GetNumRightChildren(TreeNode<KeyType, ValueType> node)
         {
             if (!node.Updated)
-                this.UpdateFromChildren(node);
+                this.UpdateStatsFromChildren(node);
             if (node.RightChild == null)
                 return 0;
             return node.RightChild.SubnodeCount;
@@ -703,16 +701,8 @@ namespace StatLists
         }
 
         // Updates the data for the given node, and returns true if and only if something changed
-        private void UpdateFromChildren(TreeNode<KeyType, ValueType> node)
+        private void UpdateStatsFromChildren(TreeNode<KeyType, ValueType> node)
         {
-            // update node.Aggregate
-            ValueType aggregate = node.Value;
-            if (node.LeftChild != null)
-                aggregate = this.valueCombiner.Combine(this.GetAggregate(node.LeftChild), aggregate);
-            if (node.RightChild != null)
-                aggregate = this.valueCombiner.Combine(aggregate, this.GetAggregate(node.RightChild));
-            node.Aggregate = aggregate;
-
             // update node.SubnodeCount
             node.SubnodeCount = this.GetSubnodeCount(node.LeftChild) + 1 + this.GetSubnodeCount(node.RightChild);
 
@@ -732,12 +722,22 @@ namespace StatLists
             // flag that it is up-to-date
             node.Updated = true;
         }
+        private void UpdateAggregateFromChildren(TreeNode<KeyType, ValueType> node)
+        {
+            // update node.Aggregate
+            ValueType aggregate = node.Value;
+            if (node.LeftChild != null)
+                aggregate = this.valueCombiner.Combine(this.GetAggregate(node.LeftChild), aggregate);
+            if (node.RightChild != null)
+                aggregate = this.valueCombiner.Combine(aggregate, this.GetAggregate(node.RightChild));
+            this.aggregates[node] = aggregate;
+        }
         private int GetSubnodeCount(TreeNode<KeyType, ValueType> node)
         {
             if (node == null)
                 return 0;
             if (!node.Updated)
-                this.UpdateFromChildren(node);
+                this.UpdateStatsFromChildren(node);
             return node.SubnodeCount;
         }
         private ValueType GetAggregate(TreeNode<KeyType, ValueType> node)
@@ -745,31 +745,33 @@ namespace StatLists
             if (node == null)
                 return valueCombiner.Default();
             if (!node.Updated)
-                this.UpdateFromChildren(node);
-            return node.Aggregate;
+                this.UpdateStatsFromChildren(node);
+            if (!this.aggregates.ContainsKey(node))
+                this.UpdateAggregateFromChildren(node);
+            return this.aggregates[node];
         }
         private int GetMaxDepth(TreeNode<KeyType, ValueType> node)
         {
             if (node == null)
                 return 0;
             if (!node.Updated)
-                this.UpdateFromChildren(node);
+                this.UpdateStatsFromChildren(node);
             return node.MaxDepth;
         }
         private KeyType GetMinSubkey(TreeNode<KeyType, ValueType> node)
         {
             if (!node.Updated)
-                this.UpdateFromChildren(node);
+                this.UpdateStatsFromChildren(node);
             return node.MinSubkey;
         }
         private KeyType GetMaxSubkey(TreeNode<KeyType, ValueType> node)
         {
             if (!node.Updated)
-                this.UpdateFromChildren(node);
+                this.UpdateStatsFromChildren(node);
             return node.MaxSubkey;
         }
-        // flags as invalid all aggregate data for this node and all of its parents
-        private void InvalidateAggregate(TreeNode<KeyType, ValueType> node)
+        // flags as invalid all stats data for this node and all of its parents
+        private void InvalidateStats(TreeNode<KeyType, ValueType> node)
         {
             TreeNode<KeyType, ValueType> currentNode = node;
             while (currentNode != null)
@@ -779,6 +781,8 @@ namespace StatLists
                     break;
                 // invalidate this node
                 currentNode.Updated = false;
+                if (this.aggregates.ContainsKey(currentNode))
+                    this.aggregates.Remove(currentNode);
                 // move to the parent
                 currentNode = currentNode.Parent;
             }
@@ -1035,5 +1039,8 @@ namespace StatLists
         private IComparer<KeyType> keyComparer;
         private ICombiner<ValueType> valueCombiner;
         private int numItems;
+        // Dictionary giving aggregate data for each node
+        // Note that if a node is not Updated, then an aggregate here may be invalid even if an aggregate is present
+        private Dictionary<TreeNode<KeyType, ValueType>, ValueType> aggregates = new Dictionary<TreeNode<KeyType, ValueType>, ValueType>();
     }
 }

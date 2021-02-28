@@ -14,9 +14,6 @@ namespace StatLists
         public TreeNode(KeyType startingKey, ValueType startingValue)
         {
             this.Stats = new ListItemStats<KeyType, ValueType>(startingKey, startingValue);
-            //this.Key = startingKey;
-            //this.Value = startingValue;
-            this.Aggregate = startingValue;
             this.SubnodeCount = 1;
             this.MaxDepth = 1;
             this.Updated = true;
@@ -38,9 +35,8 @@ namespace StatLists
                 return this.Stats.Value;
             }
         }
-        public ValueType Aggregate { get; set; }
         public int SubnodeCount { get; set; }   // the number of nodes that are either this node or its descendants
-        public bool Updated { get; set; }   // tells whether the Aggregate and SubnodeCount are up-to-date
+        public bool Updated { get; set; }   // tells whether SubnodeCount is up-to-date
         public int MaxDepth { get; set; }   // a leaf node has MaxDepth of 1
         public int DepthAtLatestRebalancing { get; set; }   // what the value of MaxDepth was when the tree was last rebalanced
         public KeyType MinSubkey { get; set; }  // the minimum value of all keys among all descendents
