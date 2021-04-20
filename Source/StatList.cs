@@ -540,6 +540,11 @@ namespace StatLists
             return this.CountBeforeKey(key, inclusive, this.rootNode);
         }
 
+        public int CountAfterKey(KeyType key, bool inclusive)
+        {
+            return this.NumItems - this.CountBeforeKey(key, !inclusive);
+        }
+
         public void Clear()
         {
             this.rootNode = this.latestNode = null;
